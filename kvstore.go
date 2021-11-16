@@ -1,4 +1,4 @@
-package kvstore
+package main
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 const (
 	retainSnapshotCount   = 2
 	raftTimeout           = 10 * time.Second
-	communicationProtocol = "TCP"
+	communicationProtocol = "tcp"
 )
 
 type KVStore struct {
@@ -36,7 +36,7 @@ type operation struct {
 	Value string `json:"value,omitempty"`
 }
 
-func Create() *KVStore {
+func createKVStore() *KVStore {
 	return &KVStore{
 		m:      make(map[string]string),
 		logger: log.New(os.Stderr, "Criado ", log.LstdFlags),
