@@ -29,6 +29,7 @@ func startHttpServer(kv *KVStore) {
 
 	router.GET("/kv/:key", func(c *gin.Context) { get(c, kv) })
 	router.PUT("/kv/:key", func(c *gin.Context) { set(c, kv) })
+	router.POST("/join", func(c *gin.Context) { join(c, kv) })
 
 	router.Run("localhost:8080")
 }
@@ -61,5 +62,18 @@ func set(c *gin.Context, store *KVStore) {
 	} else {
 		c.String(http.StatusBadRequest, "")
 	}
+
+}
+
+func join(c *gin.Context, store *KVStore) {
+
+	body := JoinRequest{}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	store.Join(body.Id, body.Addr)
 
 }
