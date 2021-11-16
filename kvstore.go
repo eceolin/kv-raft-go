@@ -47,7 +47,9 @@ func (s *KVStore) Open(id string, single bool) error {
 
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(id)
+
 	address, err := net.ResolveTCPAddr(communicationProtocol, s.RaftBind)
+
 	if err != nil {
 		return err
 	}
@@ -86,8 +88,8 @@ func (s *KVStore) Open(id string, single bool) error {
 	return nil
 }
 
-func (s *KVStore) Join(nodeID, addr string) error {
-	s.logger.Printf("Recebido request de entrada de nodo %s no %s", nodeID, addr)
+func (s *KVStore) Join(nodeId, addr string) error {
+	s.logger.Printf("recebido request de entrada de nodo %s no %s", nodeId, addr)
 
 	configFuture := s.raftInstance.GetConfiguration()
 	if err := configFuture.Error(); err != nil {
@@ -98,26 +100,26 @@ func (s *KVStore) Join(nodeID, addr string) error {
 	for _, srv := range configFuture.Configuration().Servers {
 		// If a node already exists with either the joining node's ID or address,
 		// that node may need to be removed from the config first.
-		if srv.ID == raft.ServerID(nodeID) || srv.Address == raft.ServerAddress(addr) {
+		if srv.ID == raft.ServerID(nodeId) || srv.Address == raft.ServerAddress(addr) {
 			// However if *both* the ID and the address are the same, then nothing -- not even
 			// a join operation -- is needed.
-			if srv.Address == raft.ServerAddress(addr) && srv.ID == raft.ServerID(nodeID) {
-				s.logger.Printf("Nodo %s no %s já é membro do cluster, ignorando request", nodeID, addr)
+			if srv.Address == raft.ServerAddress(addr) && srv.ID == raft.ServerID(nodeId) {
+				s.logger.Printf("nodo %s no %s já é membro do cluster, ignorando request", nodeId, addr)
 				return nil
 			}
 
 			future := s.raftInstance.RemoveServer(srv.ID, 0, 0)
 			if err := future.Error(); err != nil {
-				return fmt.Errorf("Erro para remover nodo %s no %s: %s", nodeID, addr, err)
+				return fmt.Errorf("erro para remover nodo %s no %s: %s", nodeId, addr, err)
 			}
 		}
 	}
 
-	f := s.raftInstance.AddVoter(raft.ServerID(nodeID), raft.ServerAddress(addr), 0, 0)
+	f := s.raftInstance.AddVoter(raft.ServerID(nodeId), raft.ServerAddress(addr), 0, 0)
 	if f.Error() != nil {
 		return f.Error()
 	}
-	s.logger.Printf("Nodo %s no %s com sucesso!", nodeID, addr)
+	s.logger.Printf("nodo %s no %s com sucesso!", nodeId, addr)
 	return nil
 }
 
@@ -131,7 +133,7 @@ func (s *KVStore) Get(key string) (string, error) {
 
 func (s *KVStore) Set(key, value string) error {
 	if s.raftInstance.State() != raft.Leader {
-		return fmt.Errorf("Não é o líder")
+		return fmt.Errorf("não é o líder")
 	}
 
 	c := &operation{

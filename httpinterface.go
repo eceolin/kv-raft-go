@@ -19,19 +19,14 @@ type JoinRequest struct {
 	Addr string `json:"addr"`
 }
 
-type Service struct {
-	addr  string
-	store KVStore
-}
-
-func startHttpServer(kv *KVStore) {
+func startHttpServer(kv *KVStore, httpAddr string) {
 	router := gin.Default()
 
 	router.GET("/kv/:key", func(c *gin.Context) { get(c, kv) })
 	router.PUT("/kv/:key", func(c *gin.Context) { set(c, kv) })
 	router.POST("/join", func(c *gin.Context) { join(c, kv) })
 
-	router.Run("localhost:8080")
+	router.Run("localhost" + httpAddr)
 }
 
 func get(c *gin.Context, store *KVStore) {
